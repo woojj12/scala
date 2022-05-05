@@ -17,6 +17,7 @@ package jvm
 import scala.collection.{immutable, mutable}
 import scala.tools.nsc.symtab._
 import scala.tools.asm
+import scala.tools.asm.TypeReference
 import GenBCode._
 import BackendReporting._
 
@@ -723,6 +724,31 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
       val Local(tk, name, idx, isSynth) = locals(sym)
       if (force || !isSynth) {
         mnode.visitLocalVariable(name, tk.descriptor, null, start, end, idx)
+
+        if (sym.getFlag(Flags.PARAM) == 0) { // localvar와 param인 경우 이곳으로 오는데, parameter는 따로 처리 안해도 됨
+          val startList = List(start).toArray
+          val endList = List(end).toArray
+          val idxList = List(idx).toArray
+
+          for (annot <- sym.annotations) {
+            val annotString = "L" + annot.toString.replace(".", "/") + ";"
+            if (annotString.contains("/") == true) // volatile 등 내장 annotation은 제외
+            {
+              var isRuntime = false
+              for (annotAnnot <- annot.symbol.annotations) {
+                val annotAnnotString = annotAnnot.toString
+                if (annotAnnotString.contains("java.lang.annotation.Retention") && annotAnnotString.contains("RUNTIME")) {
+                  isRuntime= true
+                }
+              }
+
+              val localannVisitor: asm.AnnotationVisitor = mnode.visitLocalVariableAnnotation(TypeReference.LOCAL_VARIABLE << 24, null, startList, endList, idxList, annotString, isRuntime);
+              val AnnotationInfo(typ, args, assocs) = annot
+
+              emitAssocs(localannVisitor, assocs)
+            }
+          }
+        }
       }
     }
 

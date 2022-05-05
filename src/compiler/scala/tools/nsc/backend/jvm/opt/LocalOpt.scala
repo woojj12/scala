@@ -393,8 +393,8 @@ abstract class LocalOpt {
     // assert that local variable annotations are empty (we don't emit them) - otherwise we'd have
     // to eliminate those covering an empty range, similar to removeUnusedLocalVariableNodes.
     def nullOrEmpty[T](l: java.util.List[T]) = l == null || l.isEmpty
-    assert(nullOrEmpty(method.visibleLocalVariableAnnotations), method.visibleLocalVariableAnnotations)
-    assert(nullOrEmpty(method.invisibleLocalVariableAnnotations), method.invisibleLocalVariableAnnotations)
+    //assert(nullOrEmpty(method.visibleLocalVariableAnnotations), method.visibleLocalVariableAnnotations)
+    //assert(nullOrEmpty(method.invisibleLocalVariableAnnotations), method.invisibleLocalVariableAnnotations)
 
     // clear the non-official "access" flags once we're done and no longer look at them
     BackendUtils.clearMaxsComputed(method)
