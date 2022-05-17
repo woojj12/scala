@@ -112,13 +112,29 @@ trait EtaExpansion { self: Analyzer =>
             val origTpe = sym.tpe
             val isRepeated = definitions.isRepeatedParamType(origTpe)
             // scala/bug#4176 Don't leak A* in eta-expanded function types. See t4176b.scala
-            val droppedStarTpe = dropIllegalStarTypes(origTpe)
-            val valDef = ValDef(Modifiers(SYNTHETIC | PARAM), sym.name.toTermName, TypeTree(droppedStarTpe), EmptyTree)
+            var droppedStarTpe = dropIllegalStarTypes(origTpe)
+            droppedStarTpe = droppedStarTpe.setAnnotations(sym.annotations)
+            //var mods = Modifiers(SYNTHETIC | PARAM, typeNames.EMPTY, Tree(sym.annotations))
+            var mods = Modifiers(SYNTHETIC | PARAM, typeNames.EMPTY)
+            /*
+            if (sym.annotations.isEmpty != true)
+            {
+              mods = Modifiers(SYNTHETIC | PARAM,typeNames.EMPTY, List(sym.annotations(0).original))
+            }
+             */
+            var valDef = ValDef(mods, sym.name.toTermName, TypeTree(droppedStarTpe), EmptyTree)
+            valDef.symbol = NoSymbol.newTypeParameter(TypeName("T"))
+            valDef.symbol = valDef.symbol.setAnnotations(sym.annotations)
+            //valDef.mods.annotations = sym.annotations(0).args
             (valDef, isRepeated)
         }
         atPos(tree.pos.makeTransparent) {
           val args = params.map {
-            case (valDef, isRepeated) => gen.paramToArg(Ident(valDef.name), isRepeated)
+            case (valDef, isRepeated) => {
+              var ident = Ident(valDef.name)
+              ident.symbol = valDef.symbol
+              gen.paramToArg(ident, isRepeated)
+            }
           }
           Function(params.map(_._1), expand(Apply(tree, args), restpe))
         }
