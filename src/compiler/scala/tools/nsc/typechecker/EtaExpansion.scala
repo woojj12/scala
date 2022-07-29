@@ -110,9 +110,12 @@ trait EtaExpansion { self: Analyzer =>
         val params: List[(ValDef, Boolean)] = paramSyms.map {
           sym =>
             val origTpe = sym.tpe
+            val annots = sym.annotations
+            for (annot <- annots)
+              println(annot)
             val isRepeated = definitions.isRepeatedParamType(origTpe)
             // scala/bug#4176 Don't leak A* in eta-expanded function types. See t4176b.scala
-            val droppedStarTpe = dropIllegalStarTypes(origTpe)
+            val droppedStarTpe = dropIllegalStarTypes(origTpe).setAnnotations(annots)
             val valDef = ValDef(Modifiers(SYNTHETIC | PARAM), sym.name.toTermName, TypeTree(droppedStarTpe), EmptyTree)
             (valDef, isRepeated)
         }
