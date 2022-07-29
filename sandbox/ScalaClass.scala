@@ -4,14 +4,6 @@ import uk.ac.manchester.tornado.api.annotations.Reduce
 import java.util.Random
 
 object ScalaClass {
-  def calcMargin(i: Int, data: Array[Double], weightsArray: Array[Double], @Reduce result: Array[Double]): Unit = {
-    result(0) = 0
-    @Parallel var index: Int = 0
-    while (index < data.length) {
-      result(0) += data(index) * weightsArray((i * data.length) + index)
-      index += 1
-    }
-  }
   def calcMarginScala(i: Array[Int], data: Array[Double], weightsArray: Array[Double], @Reduce margin: Array[Double]): Unit = {
     margin(0) = 0
     @Parallel var index: Int = 0
