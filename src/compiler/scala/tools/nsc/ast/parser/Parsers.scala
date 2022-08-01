@@ -2454,7 +2454,12 @@ self =>
                 " parameters may not be call-by-name", skipIt = false)
             else bynamemod = Flags.BYNAMEPARAM
           }
-          paramType()
+          //paramType()
+          var pt = paramType()
+          for (annot <- annots) {
+            pt = Annotated(annot, pt)
+          }
+          pt
         }
       val default =
         if (in.token == EQUALS) {

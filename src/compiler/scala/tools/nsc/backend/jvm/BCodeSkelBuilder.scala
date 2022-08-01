@@ -543,11 +543,17 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
         jgensig,
         mkArray(thrownExceptions)
       ).asInstanceOf[asm.tree.MethodNode]
+            
+      def concatAnnots(param: Symbol) = {
+        if (param.annotations.isEmpty)
+          param.originalInfo.annotations
+        else
+          param.annotations
+      }
 
       emitParamNames(mnode, params)
       emitAnnotations(mnode, others)
-      emitParamAnnotations(mnode, params.map(_.annotations))
-
+      emitParamAnnotations(mnode, params.map(concatAnnots))
     } // end of method initJMethod
 
 
